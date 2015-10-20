@@ -1,0 +1,145 @@
+import java.io.IOException;								
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import javax.swing.JScrollPane;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+
+
+
+public class pars extends JFrame  {	
+	/** Declaration of all necessary elementsa */
+	
+	DateFormat dateFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm");
+	Date date = new Date();
+	JTextArea ti = new JTextArea(1,25);
+	JTextArea programs = new JTextArea(10,10);
+	JTextArea intro = new JTextArea();
+	JButton dwn = new JButton("Pobierz program");
+	JButton exit = new JButton("Zakończ");
+	JPanel panel = new JPanel();
+	JPanel panel1 = new JPanel();
+	JPanel panel2 = new JPanel();
+	JTextArea content = new JTextArea(5,100);
+	
+	
+	public pars() {
+		   createGUI();
+		   
+	}
+	
+	/** GUI Creation */
+	
+	public void createGUI(){
+			setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+			setExtendedState(Frame.MAXIMIZED_BOTH);
+			
+		    ti.setEditable(false);
+		    programs.setEditable(false);
+		    content.setEditable(false);
+		    intro.setText( "Kliknij: Pobierz program by sprawdzić co jest grane! Bądź Zakończ by zamknąć...");
+		    panel.add(intro);
+		    add(exit);
+		    add(panel, BorderLayout.NORTH);
+		    add(dwn, BorderLayout.SOUTH);
+		    panel.add(exit);
+		    
+		   
+		    exit.setVisible(true);
+		    
+		    /** Font settings */
+		   
+		    Font font = new Font("Verdana", Font.BOLD, 20);	
+		    Font font1 = new Font("Calibri", Font.BOLD, 18);
+		    Font font2 = new Font("Impact", Font.PLAIN, 30);
+		    ti.setFont(font);
+		    intro.setForeground(Color.blue);
+		    programs.setFont(font1);
+		    content.setFont(font1);
+		    intro.setFont(font2);
+		   
+		
+		    exit.addActionListener(new ActionListener() {	/** Listener of buttons */
+		        @Override
+		        public void actionPerformed(ActionEvent e) {
+		            exitPressed(e);
+		        }
+		    });
+	 
+		
+		
+		dwn.addActionListener(new ActionListener() {	/** Listener of buttons */
+	        @Override
+	        public void actionPerformed(ActionEvent e) {
+	            dwnPressed(e);
+	        }
+	    });
+	}
+		void typeOnt(KeyEvent e) {								/** action consumer */
+		    e.consume();
+		}
+		
+		void exitPressed(ActionEvent e){
+			System.exit(0);
+		}
+		
+		
+		void dwnPressed(ActionEvent e) {			/** "Pobierz program" button clicked */
+			Document doc ;
+			intro.setVisible(false);
+			exit.setVisible(false);
+			dwn.setVisible(false);
+			try{
+				doc = Jsoup.connect("http://tv.wp.pl/").get();
+				
+				String title = doc.title();						/** webpage title parsing */
+				
+				 ti.setText(ti.getText() + title +" na : "+ (dateFormat.format(date)));
+				 panel.add(ti); 
+				 panel1.add(programs);
+				 add(exit, BorderLayout.SOUTH);
+				 exit.setVisible(true);
+                 
+                for(Element prg : doc.select("h2[class=sh2]")){		/** program list parsing */
+                		
+                		programs.setText(programs.getText() + prg.text()+ "\n");
+                }
+                
+               
+                	panel1.add(content);
+                	JScrollPane scroll1 = new JScrollPane(panel1);
+                	scroll1.setVerticalScrollBarPolicy(ScrollPaneConstants.VERTICAL_SCROLLBAR_ALWAYS);
+                	add(scroll1, BorderLayout.CENTER);
+                		
+                		for(Element cont1 : doc.select("div[class=col]")){	/** TV program parsing */
+                			for(Element hour : cont1.select("div[class=prog on]")){;
+                				content.setText(content.getText() + hour.text() + "\n" );
+                		
+                    
+                	}
+                }
+			
+			}
+		
+			
+			
+			catch (IOException a	) {    						/** catching exception */
+				a.printStackTrace();
+			} 
+		}  
+		
+		
+            
+          
+       public static void main(String[] args) {
+    	
+    	   new pars().setVisible(true);
+    	  
+        
+}
+}
